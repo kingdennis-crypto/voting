@@ -1,0 +1,78 @@
+version: "3.7"
+networks:
+  test:
+    name: fabric_test
+services:
+  couchdb0:
+    container_name: couchdb0
+    image: couchdb:3.3.2
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5984:5984
+    networks:
+      - test
+    volumes:
+      - couchdb0_data:/opt/couchdb/data
+  peer0.org-test.example.com:
+    container_name: peer0.org-test.example.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+    volumes:
+      - ../organizations/peerOrganizations/org-test.example.com/peers/peer0.org-test.example.com:/etc/hyperledger/fabric
+      - peer0.org-test.example.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 9444:9444
+    networks:
+      - test
+  couchdb-org-test:
+    container_name: couchdb-org-test
+    image: couchdb:3.2.2
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 3333:5984
+    networks:
+      - test
+    volumes:
+      - couchdb-org-test_data:/opt/couchdb/data
+  peer-test.org-test.votenet.com:
+    container_name: peer-test.org-test.votenet.com
+    image: hyperledger/fabric-peer:latest
+    labels:
+      service: hyperledger-fabric
+    environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+    volumes:
+      - ../organizations/peerOrganizations/org-test.votenet.com/peers/peer-test.org-test.votenet.com:/etc/hyperledger/fabric
+      - peer-test.org-test.votenet.com:/var/hyperledger/production
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7052:7051
+      - 9555:9444
+    networks:
+      - test
+volumes:
+  couchdb0_data: null
+  peer0.org-test.example.com: null
+  couchdb-org-test_data: null
+  peer-test.org-test.votenet.com: null
