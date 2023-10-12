@@ -7,12 +7,11 @@ const router: Router = express.Router()
 router.post('/admin', async (req: Request, res: Response) => {
   try {
     await WalletHelper.enrollAdmin()
-    res
-      .status(200)
-      .json({
-        message:
-          'Successfully enrolled admin user "admin" and imported it into the wallet',
-      })
+
+    res.status(200).json({
+      message:
+        'Successfully enrolled admin user "admin" and imported it into the wallet',
+    })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }

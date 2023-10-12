@@ -17,7 +17,7 @@ import DummyVotes from '../data/dummyVotes'
   title: 'VoteTransfer',
   description: 'Smart contract for voting on candidates',
 })
-export default class VoteTransferContract extends Contract {
+export class VoteTransferContract extends Contract {
   @Transaction()
   public async InitLedger(ctx: Context): Promise<void> {
     // TODO: Add dummy data
@@ -38,19 +38,20 @@ export default class VoteTransferContract extends Contract {
     id: string,
     timestamp: string,
     candidateId: string
-  ): Promise<void> {
+  ): Promise<string> {
+    id = `v-${id}`
+
     const exists = await this.VoteExists(ctx, id)
 
     if (exists) {
       throw new Error(`The vote ${id} already exists`)
     }
 
-    const vote: Vote = new Vote(id, timestamp, candidateId)
+    const vote: Vote = { id, timestamp, candidateId }
 
-    return await ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(vote)))
-    )
+    await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(vote))))
+
+    return JSON.stringify(vote)
   }
 
   @Transaction(false)
@@ -70,19 +71,18 @@ export default class VoteTransferContract extends Contract {
     id: string,
     timestamp: string,
     candidateId: string
-  ): Promise<void> {
+  ): Promise<string> {
     const exists = await this.VoteExists(ctx, id)
 
     if (!exists) {
       throw new Error(`The candidate ${id} does not exist`)
     }
 
-    const vote: Vote = new Vote(id, timestamp, candidateId)
+    const vote: Vote = { id, timestamp, candidateId }
 
-    return ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(vote)))
-    )
+    ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(vote))))
+
+    return JSON.stringify(vote)
   }
 
   @Transaction()
@@ -108,7 +108,7 @@ export default class VoteTransferContract extends Contract {
   public async GetAllVotes(ctx: Context): Promise<string> {
     const allVotes = []
 
-    const iterator = await ctx.stub.getStateByRange('', '')
+    const iterator = await ctx.stub.getStateByRange('v-', 'v-~')
     let result = await iterator.next()
 
     while (!result.done) {

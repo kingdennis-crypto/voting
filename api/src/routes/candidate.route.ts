@@ -1,16 +1,14 @@
-import express, { Router, Request, Response } from 'express'
-
-import PartyRepository from '../repositories/party.repo'
+import express, { Request, Response, Router } from 'express'
 import ResponseHelper from '../utils/helpers/response'
-import { requireHeaders } from '../utils/middleware/request.middleware'
+import CandidateRepo from '../repositories/candidate.repo'
 
 const router: Router = express.Router()
-const repo = new PartyRepository()
+const repo = new CandidateRepo()
 
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const parties = await repo.getAll()
-    ResponseHelper.successResponse(res, 200, parties)
+    const candidates = await repo.getAll()
+    ResponseHelper.successResponse(res, 200, candidates)
   } catch (error) {
     ResponseHelper.errorResponse(res, 500, error.message)
   }
@@ -18,8 +16,8 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const party = await repo.getById(req.params.id)
-    ResponseHelper.successResponse(res, 200, party)
+    const candidate = await repo.getById(req.params.id)
+    ResponseHelper.successResponse(res, 200, candidate)
   } catch (error) {
     ResponseHelper.errorResponse(res, 500, error.message)
   }
@@ -27,10 +25,10 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { name } = req.body
+    const { name, partyId } = req.body
 
-    const party = await repo.create(name)
-    ResponseHelper.successResponse(res, 200, party)
+    const candidate = await repo.create(name, partyId)
+    ResponseHelper.successResponse(res, 200, candidate)
   } catch (error) {
     ResponseHelper.errorResponse(res, 500, error.message)
   }
@@ -38,14 +36,14 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const paramID = req.params.id
-    const { id, name } = req.body
+    const paramdID = req.params.id
+    const { id, name, partyId } = req.body
 
-    if (paramID !== id)
+    if (paramdID !== id)
       return ResponseHelper.errorResponse(res, 500, "The ID's don't match")
 
-    const party = await repo.update(paramID, name)
-    ResponseHelper.successResponse(res, 200, party)
+    const candidate = await repo.update(paramdID, name, partyId)
+    ResponseHelper.successResponse(res, 200, candidate)
   } catch (error) {
     ResponseHelper.errorResponse(res, 500, error.message)
   }

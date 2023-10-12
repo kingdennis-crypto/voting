@@ -4,7 +4,32 @@
   "orgMSPID": "Org1MSP",
   "caName": "ca.org1.example.com",
   "gatewayDiscovery": {
-      "enabled": true,
-      "asLocalhost": true
-  }
+    "enabled": true,
+    "asLocalhost": true
+  },
+  "chaincode": {
+    "organisation": {
+      "org1.example.com": {
+        "connectionProfile": "test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json",
+        "caName": "ca.org1.example.com",
+        "orgMSPID": "Org1MSP"
+      },
+      "org2.example.com": {
+        "connectionProfile": "test-network/organizations/peerOrganizations/org2.example.com/connection-org2.json",
+        "caName": "ca.org2.example.com",
+        "orgMSPID": "Org2MSP"
+      }
+    },
+    "connection": {
+      "user": "dennis",
+      "peer": "peer0",
+      "organisation": "org1.example.com",
+      "channel": "mychannel",
+      "gatewayDiscovery": {
+        "enabled": true,
+        "asLocalhost": true
+      }
+    }
+  },
+  "initialised": true
 }

@@ -8,6 +8,7 @@ import {
 import Party from '../models/party'
 import stringify from 'json-stringify-deterministic'
 import sortKeysRecursive from 'sort-keys-recursive'
+import { v4 as uuidv4 } from 'uuid'
 
 @Info({
   title: 'PartyTransfer',
@@ -42,19 +43,24 @@ export class PartyTransferContract extends Contract {
     ctx: Context,
     id: string,
     name: string
-  ): Promise<void> {
+  ): Promise<string> {
+    // TODO: Do not use uuidv4 here!!
+    // On multiple peers it will generate different UUID's and it will crash
+    // const id = uuidv4()
+    id = `p-${id}`
     const exists = await this.PartyExists(ctx, id)
 
     if (exists) {
       throw new Error(`The party ${id} already exists`)
     }
 
-    // const party: Party = new Party(id, name)
     const party: Party = { id, name }
     await ctx.stub.putState(
       id,
       Buffer.from(stringify(sortKeysRecursive(party)))
     )
+
+    return JSON.stringify(party)
   }
 
   @Transaction(false)
@@ -73,18 +79,18 @@ export class PartyTransferContract extends Contract {
     ctx: Context,
     id: string,
     name: string
-  ): Promise<void> {
+  ): Promise<string> {
     const exists = await this.PartyExists(ctx, id)
 
     if (!exists) {
       throw new Error(`The party ${id} does not exist`)
     }
 
-    const party: Party = new Party(id, name)
-    return ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(party)))
-    )
+    // const party: Party = new Party(id, name)
+    const party: Party = { id, name }
+    ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(party))))
+
+    return JSON.stringify(party)
   }
 
   @Transaction()
@@ -100,6 +106,7 @@ export class PartyTransferContract extends Contract {
 
   @Transaction(false)
   @Returns('string')
+  // TODO: Change from checking id to checking name
   public async PartyExists(ctx: Context, id: string): Promise<boolean> {
     const partyJSON = await ctx.stub.getState(id)
     return partyJSON && partyJSON.length > 0
@@ -109,7 +116,7 @@ export class PartyTransferContract extends Contract {
   public async GetAllParties(ctx: Context): Promise<string> {
     const allParties = []
 
-    const iterator = await ctx.stub.getStateByRange('', '')
+    const iterator = await ctx.stub.getStateByRange('p-', 'p-~')
     let result = await iterator.next()
 
     while (!result.done) {

@@ -4,3 +4,6 @@ test-network/
 dist/
 explorer/
 wallet/
+**/.env*
+!**/.env.example
+**/.DS_Store

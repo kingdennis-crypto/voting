@@ -1,6 +1,5 @@
-import { IRepository, IVote } from "../utils/interfaces";
-import Repository from "./repo";
-import { v4 as uuidv4 } from "uuid";
+import Repository from './repo'
+import { v4 as uuidv4 } from 'uuid'
 
 export default class VoteRepository extends Repository {
   constructor() {
@@ -9,15 +8,15 @@ export default class VoteRepository extends Repository {
 
   public async getAll() {
     try {
-      return await super.submitTransaction("GetAllVotes", 'admin')
+      return await super.submitTransaction('vote', 'GetAllVotes', 'admin')
     } catch (error) {
       throw error
     }
   }
-  
+
   public async getById(id: string) {
     try {
-      return await super.submitTransaction('ReadVote', 'admin', id)
+      return await super.submitTransaction('vote', 'ReadVote', 'admin', id)
     } catch (error) {
       throw error
     }
@@ -28,7 +27,14 @@ export default class VoteRepository extends Repository {
       const id = uuidv4()
       const timestamp = Date.now().toString()
 
-      return await super.submitTransaction('CreateVote', 'admin', id, timestamp, candidateId)
+      return await super.submitTransaction(
+        'vote',
+        'CreateVote',
+        'admin',
+        id,
+        timestamp,
+        candidateId
+      )
     } catch (error) {
       throw error
     }
@@ -36,10 +42,9 @@ export default class VoteRepository extends Repository {
 
   public async delete(id: string) {
     try {
-      return await super.submitTransaction('DeleteVote', 'admin', id)
+      return await super.submitTransaction('vote', 'DeleteVote', 'admin', id)
     } catch (error) {
       throw error
     }
   }
-  
 }
