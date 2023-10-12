@@ -16,7 +16,7 @@ import DummyCandidates from '../data/dummyCandidates'
   title: 'CandidateTransfer',
   description: 'Smart contract for the management of candidates',
 })
-export default class CandidateTransferContract extends Contract {
+export class CandidateTransferContract extends Contract {
   @Transaction()
   public async InitLedger(ctx: Context): Promise<void> {
     // TODO: Add dummy data
@@ -37,19 +37,23 @@ export default class CandidateTransferContract extends Contract {
     id: string,
     name: string,
     partyId: string
-  ): Promise<void> {
+  ): Promise<string> {
+    id = `c-${id}`
+
     const exists = await this.CandidateExists(ctx, id)
 
     if (exists) {
       throw new Error(`The candidate ${id} already exists`)
     }
 
-    const candidate: Candidate = new Candidate(id, name, partyId)
+    const candidate: Candidate = { id, name, partyId }
 
     await ctx.stub.putState(
       id,
       Buffer.from(stringify(sortKeysRecursive(candidate)))
     )
+
+    return JSON.stringify(candidate)
   }
 
   @Transaction(false)
@@ -69,19 +73,19 @@ export default class CandidateTransferContract extends Contract {
     id: string,
     name: string,
     partyId: string
-  ): Promise<void> {
+  ): Promise<string> {
     const exists = await this.CandidateExists(ctx, id)
 
     if (!exists) {
       throw new Error(`The candidate ${id} does not exist`)
     }
 
-    const candidate: Candidate = new Candidate(id, name, partyId)
+    // const candidate: Candidate = new Candidate(id, name, partyId)
+    const candidate: Candidate = { id, name, partyId }
 
-    return ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(candidate)))
-    )
+    ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(candidate))))
+
+    return JSON.stringify(candidate)
   }
 
   @Transaction()
@@ -106,7 +110,7 @@ export default class CandidateTransferContract extends Contract {
   public async GetAllCandidates(ctx: Context): Promise<string> {
     const allCandidates = []
 
-    const iterator = await ctx.stub.getStateByRange('', '')
+    const iterator = await ctx.stub.getStateByRange('c-', 'c-~')
     let result = await iterator.next()
 
     while (!result.done) {

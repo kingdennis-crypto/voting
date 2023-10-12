@@ -1,69 +1,88 @@
-import { Gateway, GatewayOptions, Network, Wallets, Contract } from 'fabric-network'
+import { Gateway, GatewayOptions, Contract } from 'fabric-network'
 
-import NetworkHelper from '../utils/helpers/network'
 import ConfigHelper from '../utils/helpers/config'
-
-import { inspect } from 'util';
 
 import * as path from 'path'
 import * as fs from 'fs'
-import * as crypto from 'crypto'
-import * as grpc from '@grpc/grpc-js'
 
-import {
-  Identity,
-  signers,
-  connect,
-  GatewayError,
-} from '@hyperledger/fabric-gateway'
 import { TextDecoder } from 'util'
+import { ConnectionProfile } from '../utils/types'
 
 const utf8Decoder = new TextDecoder()
 
 // TODO: Make this singleton so that the connection will only be made once to save throughput
 export default abstract class Repository {
-  private contract: Contract
+  private contract: {
+    [key: string]: Contract
+  }
 
   constructor() {}
 
   // TODO: Add userID as parameter
   private async connectToContract(): Promise<void> {
+    const configFile = await ConfigHelper.getConfigFile()
     const config = await ConfigHelper.getConfig()
-
     const gateway = new Gateway()
+
+    const { organisation, user, channel } = configFile.chaincode.connection
+    const ccpPath =
+      configFile.chaincode.organisation[organisation].connectionProfile
+    const ccp: ConnectionProfile = JSON.parse(fs.readFileSync(ccpPath, 'utf-8'))
+
     const gatewayOpts: GatewayOptions = {
       wallet: config.wallet,
-      identity: 'dennis',
+      identity: user,
       discovery: {
         asLocalhost: true,
-        enabled: true
-      }
+        enabled: true,
+      },
     }
 
     try {
-      await gateway.connect(config.ccp, gatewayOpts)
+      await gateway.connect(ccp, gatewayOpts)
 
-      const network = await gateway.getNetwork('mychannel')
-      const contract = network.getContract('votenet');
+      const network = await gateway.getNetwork(channel)
 
-      this.contract = contract;
+      const partyContract = network.getContract(
+        'votenet',
+        'PartyTransferContract'
+      )
+      const voteContract = network.getContract(
+        'votenet',
+        'VoteTransferContract'
+      )
+      const candidateContract = network.getContract(
+        'votenet',
+        'CandidateTransferContract'
+      )
+
+      this.contract = {
+        party: partyContract,
+        candidate: candidateContract,
+        vote: voteContract,
+      }
     } catch (error) {
       console.log(error.message)
+      throw error
     } finally {
       gateway.disconnect()
     }
   }
 
   public async submitTransaction(
+    contract: 'vote' | 'candidate' | 'party',
     transactionName: string,
-    userID: string | null,
     ...args: string[]
   ): Promise<object> {
     try {
       if (this.contract === null || this.contract === undefined)
         await this.connectToContract()
 
-      const data = await this.contract.submitTransaction(transactionName, ...args)
+      const data = await this.contract[contract].submitTransaction(
+        transactionName,
+        ...args
+      )
+
       return JSON.parse(utf8Decoder.decode(data))
     } catch (error) {
       throw error

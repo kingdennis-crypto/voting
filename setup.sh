@@ -1,7 +1,10 @@
 echo "Removing old wallets"
 /bin/rm -rf $PWD/wallet/*
 
-# TODO: Also set NPM environment variable
+echo "Deinitialise config"
+jq '. + { initialised: false }' "./api/src/config.json" > ./temp.json && mv ./temp.json ./api/src/config.json
+
+# # TODO: Also set NPM environment variable
 echo "Setting environment variables"
 export FABRIC_PATH=$PWD
 export PATH=$(PWD)/bin:$PATH
@@ -20,7 +23,7 @@ $PWD/test-network/network.sh up createChannel -c mychannel -ca -s couchdb
 echo "Deploying chaincode"
 $PWD/test-network/network.sh deployCC -ccn votenet -ccp $PWD/chaincode -ccv 1 -ccl typescript
 
-# TODO: Add a npm build and npm run
+# # TODO: Add a npm build and npm run
 
 # echo "Installing blockchain explorer"
 # cd $FABRIC_PATH
