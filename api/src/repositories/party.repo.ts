@@ -1,14 +1,16 @@
 import Repository from './repo'
 import { v4 as uuidv4 } from 'uuid'
 
-export default class PartyRepository extends Repository {
+export default class PartyRepository {
+  private readonly repo: Repository
+
   constructor() {
-    super()
+    this.repo = Repository.getInstance()
   }
 
   public async getAll() {
     try {
-      const data = await super.submitTransaction('party', 'GetAllParties')
+      const data = await this.repo.submitTransaction('party', 'GetAllParties')
       return data
     } catch (error) {
       throw error
@@ -17,7 +19,7 @@ export default class PartyRepository extends Repository {
 
   public async getById(id: string) {
     try {
-      return await super.submitTransaction('party', 'ReadParty', id)
+      return await this.repo.submitTransaction('party', 'ReadParty', id)
     } catch (error) {
       throw error
     }
@@ -27,7 +29,7 @@ export default class PartyRepository extends Repository {
     try {
       console.log(`Creating party with name: ${name}`)
       const id = uuidv4()
-      return await super.submitTransaction('party', 'CreateParty', id, name)
+      return await this.repo.submitTransaction('party', 'CreateParty', id, name)
     } catch (error) {
       throw error
     }
@@ -35,7 +37,7 @@ export default class PartyRepository extends Repository {
 
   public async update(id: string, name: string) {
     try {
-      return await super.submitTransaction('party', 'UpdateParty', id, name)
+      return await this.repo.submitTransaction('party', 'UpdateParty', id, name)
     } catch (error) {
       throw error
     }
@@ -43,7 +45,7 @@ export default class PartyRepository extends Repository {
 
   public async delete(id: string) {
     try {
-      return await super.submitTransaction('party', 'DeleteParty', id)
+      return await this.repo.submitTransaction('party', 'DeleteParty', id)
     } catch (error) {
       throw error
     }

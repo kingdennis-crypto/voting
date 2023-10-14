@@ -1,12 +1,4 @@
 {
-  "connectionProfile": "test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json",
-  "appAdmin": "admin",
-  "orgMSPID": "Org1MSP",
-  "caName": "ca.org1.example.com",
-  "gatewayDiscovery": {
-    "enabled": true,
-    "asLocalhost": true
-  },
   "chaincode": {
     "organisation": {
       "org1.example.com": {
@@ -19,17 +11,21 @@
         "caName": "ca.org2.example.com",
         "orgMSPID": "Org2MSP"
       }
-    },
-    "connection": {
-      "user": "dennis",
-      "peer": "peer0",
-      "organisation": "org1.example.com",
-      "channel": "mychannel",
-      "gatewayDiscovery": {
-        "enabled": true,
-        "asLocalhost": true
-      }
     }
   },
-  "initialised": true
+  "channels": [
+    "election1",
+    "election2"
+  ],
+  "connection": {
+    "user": "admin",
+    "peer": "peer0",
+    "organisation": "org1.example.com",
+    "channel": "election1",
+    "gatewayDiscovery": {
+      "enabled": true,
+      "asLocalhost": true
+    }
+  },
+  "initialised": false
 }

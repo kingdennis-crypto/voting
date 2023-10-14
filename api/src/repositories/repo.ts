@@ -7,31 +7,40 @@ import * as fs from 'fs'
 
 import { TextDecoder } from 'util'
 import { ConnectionProfile } from '../utils/types'
+import { CcpConfig } from '../utils/types/ccp.type'
+import WalletHelper from '../utils/helpers/wallet'
 
 const utf8Decoder = new TextDecoder()
 
 // TODO: Make this singleton so that the connection will only be made once to save throughput
-export default abstract class Repository {
-  private contract: {
-    [key: string]: Contract
+export default class Repository {
+  private static instance: Repository
+
+  private contract: { [key: string]: Contract }
+
+  private constructor() {}
+
+  public static getInstance(): Repository {
+    if (!Repository.instance) {
+      Repository.instance = new Repository()
+      Repository.instance.connectToContract()
+    }
+
+    return Repository.instance
   }
 
-  constructor() {}
-
-  // TODO: Add userID as parameter
-  private async connectToContract(): Promise<void> {
-    const configFile = await ConfigHelper.getConfigFile()
-    const config = await ConfigHelper.getConfig()
+  public async connectToContract(): Promise<void> {
     const gateway = new Gateway()
+    const config = await ConfigHelper.getConfig()
+    const organisation = config.organisations[0]
 
-    const { organisation, user, channel } = configFile.chaincode.connection
-    const ccpPath =
-      configFile.chaincode.organisation[organisation].connectionProfile
-    const ccp: ConnectionProfile = JSON.parse(fs.readFileSync(ccpPath, 'utf-8'))
+    if ((await config.wallet.list()).length === 0) {
+      await WalletHelper.enrollAdmin()
+    }
 
     const gatewayOpts: GatewayOptions = {
       wallet: config.wallet,
-      identity: user,
+      identity: config.connection.user,
       discovery: {
         asLocalhost: true,
         enabled: true,
@@ -39,9 +48,12 @@ export default abstract class Repository {
     }
 
     try {
-      await gateway.connect(ccp, gatewayOpts)
+      await gateway.connect(
+        organisation.connectionProfile as CcpConfig,
+        gatewayOpts
+      )
 
-      const network = await gateway.getNetwork(channel)
+      const network = await gateway.getNetwork(config.connection.channel)
 
       const partyContract = network.getContract(
         'votenet',
@@ -78,7 +90,8 @@ export default abstract class Repository {
       if (this.contract === null || this.contract === undefined)
         await this.connectToContract()
 
-      const data = await this.contract[contract].submitTransaction(
+      const contractObj: Contract = this.contract[contract]
+      const data: ArrayBuffer = await contractObj.submitTransaction(
         transactionName,
         ...args
       )

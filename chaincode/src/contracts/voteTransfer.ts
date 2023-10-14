@@ -12,6 +12,7 @@ import sortKeysRecursive from 'sort-keys-recursive'
 import Candidate from '../models/candidate'
 
 import DummyVotes from '../data/dummyVotes'
+import AuthorizationHelper from '../utils/helpers/authorization'
 
 @Info({
   title: 'VoteTransfer',
@@ -19,26 +20,15 @@ import DummyVotes from '../data/dummyVotes'
 })
 export class VoteTransferContract extends Contract {
   @Transaction()
-  public async InitLedger(ctx: Context): Promise<void> {
-    // TODO: Add dummy data
-    const votes: Vote[] = DummyVotes
-
-    votes.forEach(async (vote) => {
-      await ctx.stub.putState(
-        vote.id,
-        Buffer.from(stringify(sortKeysRecursive(vote)))
-      )
-      console.info(`Vote ${vote.id} initialized`)
-    })
-  }
-
-  @Transaction()
   public async CreateVote(
     ctx: Context,
     id: string,
     timestamp: string,
     candidateId: string
   ): Promise<string> {
+    if (!AuthorizationHelper.isVoter(ctx.clientIdentity))
+      throw new Error('Only a voter can vote!')
+
     id = `v-${id}`
 
     const exists = await this.VoteExists(ctx, id)
@@ -63,37 +53,6 @@ export class VoteTransferContract extends Contract {
     }
 
     return voteJSON.toString()
-  }
-
-  @Transaction()
-  public async UpdateVote(
-    ctx: Context,
-    id: string,
-    timestamp: string,
-    candidateId: string
-  ): Promise<string> {
-    const exists = await this.VoteExists(ctx, id)
-
-    if (!exists) {
-      throw new Error(`The candidate ${id} does not exist`)
-    }
-
-    const vote: Vote = { id, timestamp, candidateId }
-
-    ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(vote))))
-
-    return JSON.stringify(vote)
-  }
-
-  @Transaction()
-  public async DeleteVote(ctx: Context, id: string): Promise<void> {
-    const exists = await this.VoteExists(ctx, id)
-
-    if (!exists) {
-      throw new Error(`The candidate ${id} does not exist`)
-    }
-
-    return ctx.stub.deleteState(id)
   }
 
   @Transaction(false)

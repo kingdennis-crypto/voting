@@ -1,6 +1,6 @@
 import express, { Router, Request, Response } from 'express'
 import WalletHelper from '../utils/helpers/wallet'
-import NetworkHelper from '../utils/helpers/network'
+import ResponseHelper from '../utils/helpers/response'
 
 const router: Router = express.Router()
 
@@ -21,19 +21,31 @@ router.post('/user', async (req: Request, res: Response) => {
   try {
     const { userId, name, role } = req.body
 
-    await WalletHelper.enrollUser(userId, name, role)
+    await WalletHelper.enrollUser(userId, role)
     res.status(200).json({ message: 'Successfully created a user' })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
 })
 
-router.post('/connect', async (req: Request, res: Response) => {
+router.post('/:id', async (req: Request, res: Response) => {
   try {
-    const data = await NetworkHelper.connectToNetwork('dennis7')
-    res.status(200).json(data)
+    const { id } = req.params
+
+    await WalletHelper.enrollUser(id, 'admin')
+    ResponseHelper.successResponse(res, 200, 'Successfully created a user')
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    ResponseHelper.errorResponse(res, 500, error.message)
+  }
+})
+
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id
+    await WalletHelper.deleteWallet(id)
+    ResponseHelper.successResponse(res, 200, 'Successfully deleted the wallet')
+  } catch (error) {
+    ResponseHelper.errorResponse(res, 500, error.message)
   }
 })
 

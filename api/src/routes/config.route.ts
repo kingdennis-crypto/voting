@@ -4,18 +4,35 @@ import ResponseHelper from '../utils/helpers/response'
 import * as fs from 'fs'
 import * as path from 'path'
 import ConfigHelper from '../utils/helpers/config'
+import WalletHelper from '../utils/helpers/wallet'
+import Repository from '../repositories/repo'
+import { CcpConfig } from '../utils/types/ccp.type'
 
 const router: Router = express.Router()
 
-router.get('/', (req: Request, res: Response) => {
-  res.status(200).json({ message: 'Config' })
+router.get('/connection', async (req: Request, res: Response) => {
+  try {
+    const config = await ConfigHelper.getConfig()
+
+    const returnObj = {
+      channels: config.channels,
+      organisations: config.organisations.map((item) => ({
+        id: item.id,
+        peers: Object.keys((item.connectionProfile as CcpConfig).peers),
+      })),
+    }
+
+    ResponseHelper.successResponse(res, 200, returnObj)
+  } catch (error) {
+    ResponseHelper.errorResponse(res, 500, error.message)
+  }
 })
 
 router.post('/connection', (req: Request, res: Response) => {
   try {
-    const { user, peer, organisation, channel } = req.body
+    const { user, channel } = req.body
 
-    ConfigHelper.setConnectionDetails(user, peer, organisation, channel)
+    ConfigHelper.setConnectionDetails(user, channel)
 
     ResponseHelper.successResponse(
       res,
@@ -27,38 +44,10 @@ router.post('/connection', (req: Request, res: Response) => {
   }
 })
 
-router.post('/initialise', (req: Request, res: Response) => {
+router.get('/identities', async (req: Request, res: Response) => {
   try {
-    const { userId } = req.body
-
-    ConfigHelper.initialise(userId)
-    ResponseHelper.successResponse(res, 200, 'Help! But in a good way')
-  } catch (error) {
-    ResponseHelper.errorResponse(res, 500, error.message)
-  }
-})
-
-router.get('/organisations', (req: Request, res: Response) => {
-  try {
-    const organisationsPath = path.resolve(
-      process.env.FABRIC_PATH,
-      'test-network',
-      'organizations',
-      'peerOrganizations'
-    )
-
-    const organisations = fs.readdirSync(organisationsPath)
-
-    const responseObj = []
-
-    organisations.forEach((organisation: string) => {
-      const peerPath = path.resolve(organisationsPath, organisation, 'peers')
-      const peers = fs.readdirSync(peerPath)
-
-      responseObj.push({ organisation, peers })
-    })
-
-    ResponseHelper.successResponse(res, 200, responseObj)
+    const wallets = await WalletHelper.getWallets()
+    ResponseHelper.successResponse(res, 200, wallets)
   } catch (error) {
     ResponseHelper.errorResponse(res, 500, error.message)
   }

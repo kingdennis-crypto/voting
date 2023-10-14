@@ -2,6 +2,7 @@ import { ConfigProvider } from '@/utils/context/config.context'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { UserProvider } from '@auth0/nextjs-auth0/client'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,8 +18,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <ConfigProvider>{children}</ConfigProvider>
+      <body className={inter.className + ' bg-gray-200 flex flex-col'}>
+        <UserProvider>
+          <ConfigProvider>{children}</ConfigProvider>
+        </UserProvider>
       </body>
     </html>
   )

@@ -1,9 +1,12 @@
 'use client'
 
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 export default function AddParty() {
+  const router = useRouter()
+
   const [name, setName] = useState<string>('')
 
   const handleAddParty = () => {
@@ -14,6 +17,7 @@ export default function AddParty() {
       .then((res) => {
         console.log(res)
         alert('Successfully created a party')
+        router.push('/admin/parties')
       })
       .catch((err) => {
         console.log(err)

@@ -1,47 +1,53 @@
-import { Config, ConfigType, ConnectionProfile } from '../types'
 import { Wallet, Wallets } from 'fabric-network'
 
 import * as path from 'path'
 import * as fs from 'fs'
 import WalletHelper from './wallet'
+import Repository from '../../repositories/repo'
+import {
+  Config,
+  ConnectionProfile,
+  OrganisationConfig,
+} from '../types/config.type'
+import { CcpConfig } from '../types/ccp.type'
 
-export type ConfigReturnType = {
-  config: ConfigType
-  ccp: ConnectionProfile
+type ConfigReturn = {
+  organisations: ConnectionProfile[]
   wallet: Wallet
-}
+} & Config
 
 export default class ConfigHelper {
   constructor() {}
 
-  public static async getConfig(userID?: string): Promise<ConfigReturnType> {
-    // Get the config data
-    const configPath = path.resolve('src', 'config.json')
-    const config: ConfigType = JSON.parse(
-      fs.readFileSync(configPath, 'utf-8')
-    ) as ConfigType
-
-    // Get the ccp data
-    const ccpPath = path.resolve(
-      process.env.FABRIC_PATH,
-      config.connectionProfile
-    )
-    const ccp: ConnectionProfile = JSON.parse(
-      fs.readFileSync(ccpPath, 'utf-8')
-    ) as ConnectionProfile
-
-    const walletPath = path.join(process.env.FABRIC_PATH, 'wallet')
-    const wallet = await Wallets.newFileSystemWallet(walletPath)
-
-    return { config, ccp, wallet }
-  }
-
-  public static async getConfigFile(): Promise<Config> {
+  public static async getConfig(): Promise<ConfigReturn> {
     try {
       const configPath = path.resolve('src', 'config.json')
-      const config: Config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+      const fabricPath = process.env.FABRIC_PATH
+      const walletPath = path.resolve(fabricPath, 'wallet')
 
-      return config
+      const config: Config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+      const organisationsObjects: OrganisationConfig =
+        config.chaincode.organisation
+
+      const wallet = await Wallets.newFileSystemWallet(walletPath)
+
+      const organisations = await Object.keys(organisationsObjects)
+        .map((id) => ({ id, ...organisationsObjects[id] }))
+        .map((item) => {
+          const _path = path.resolve(
+            fabricPath,
+            item.connectionProfile as string
+          )
+          const _ccp: CcpConfig = JSON.parse(fs.readFileSync(_path, 'utf-8'))
+
+          return { ...item, ccpPath: _path, connectionProfile: _ccp }
+        })
+
+      // console.log('ORG', organisations)
+
+      const returnObj = { ...config, organisations: organisations, wallet }
+
+      return returnObj
     } catch (error) {
       throw error
     }
@@ -64,8 +70,8 @@ export default class ConfigHelper {
 
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
 
-      await WalletHelper.enrollAdmin()
-      await WalletHelper.enrollUser(userID, userID, 'user')
+      // await WalletHelper.enrollAdmin()
+      // await WalletHelper.enrollUser(userID, 'user')
     } catch (error) {
       throw error
     }
@@ -73,22 +79,19 @@ export default class ConfigHelper {
 
   public static async setConnectionDetails(
     user: string,
-    peer: string,
-    organisation: string,
     channel: string
   ): Promise<void> {
     try {
       const configPath = path.resolve('src', 'config.json')
       const config: Config = JSON.parse(
         fs.readFileSync(configPath, 'utf-8')
-      ) as Config
+      ) as any
 
-      config.chaincode.connection.user = user
-      config.chaincode.connection.peer = peer
-      config.chaincode.connection.organisation = organisation
-      config.chaincode.connection.channel = channel
+      config.connection.user = user
+      config.connection.channel = channel
 
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+      Repository.getInstance().connectToContract()
     } catch (error) {
       throw error
     }
