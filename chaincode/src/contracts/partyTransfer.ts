@@ -8,45 +8,22 @@ import {
 import Party from '../models/party'
 import stringify from 'json-stringify-deterministic'
 import sortKeysRecursive from 'sort-keys-recursive'
-import { v4 as uuidv4 } from 'uuid'
+import AuthorizationHelper from '../utils/helpers/authorization'
 
 @Info({
   title: 'PartyTransfer',
   description: 'Smart contract for voting on candidates',
 })
 export class PartyTransferContract extends Contract {
-  @Transaction(true)
-  public async InitLedger(ctx: Context): Promise<void> {
-    // TODO: Add dummy data
-    const parties: Party[] = [
-      {
-        id: '1',
-        name: 'party1',
-      },
-      {
-        id: '2',
-        name: 'party2',
-      },
-    ]
-
-    parties.forEach(async (party) => {
-      await ctx.stub.putState(
-        party.id,
-        Buffer.from(stringify(sortKeysRecursive({ ...party })))
-      )
-      console.info(`Party ${party.id} initialized`)
-    })
-  }
-
   @Transaction()
   public async CreateParty(
     ctx: Context,
     id: string,
     name: string
   ): Promise<string> {
-    // TODO: Do not use uuidv4 here!!
-    // On multiple peers it will generate different UUID's and it will crash
-    // const id = uuidv4()
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only an admin can create a party')
+
     id = `p-${id}`
     const exists = await this.PartyExists(ctx, id)
 
@@ -80,6 +57,9 @@ export class PartyTransferContract extends Contract {
     id: string,
     name: string
   ): Promise<string> {
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only an admin can create a party')
+
     const exists = await this.PartyExists(ctx, id)
 
     if (!exists) {
@@ -95,13 +75,36 @@ export class PartyTransferContract extends Contract {
 
   @Transaction()
   public async DeleteParty(ctx: Context, id: string): Promise<void> {
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only an admin can create a party')
+
     const exists = await this.PartyExists(ctx, id)
 
     if (!exists) {
       throw new Error(`The party ${id} does not exist`)
     }
 
-    return ctx.stub.deleteState(id)
+    const candidates = await ctx.stub.getStateByRange('c-', 'c-~')
+    let result = await candidates.next()
+
+    // while (!result.done) {
+    //   const strValue = Buffer.from(result.value.value.toString()).toString(
+    //     'utf-8'
+    //   )
+
+    //   let record: Party | string
+
+    //   try {
+    //     record = JSON.parse(strValue)
+    //   } catch (error) {
+    //     console.log(error)
+    //     record = strValue
+    //   }
+
+    //   await ctx.stub.deleteState(result.value.key)
+    // }
+
+    return await ctx.stub.deleteState(id)
   }
 
   @Transaction(false)

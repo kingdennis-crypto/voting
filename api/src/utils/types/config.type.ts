@@ -1,5 +1,8 @@
+import { CcpConfig } from './ccp.type'
+
 export type ConnectionProfile = {
-  connectionProfile: string
+  id?: string
+  connectionProfile: string | CcpConfig
   caName: string
   orgMSPID: string
 }
@@ -15,11 +18,11 @@ export type ConnectionConfig = {
   }
 }
 
+export type OrganisationConfig = Record<string, ConnectionProfile>
+
 export type Config = {
   chaincode: {
-    organisation: {
-      [key: string]: ConnectionProfile
-    }
+    organisation: OrganisationConfig
   }
   channels: string
   connection: ConnectionConfig

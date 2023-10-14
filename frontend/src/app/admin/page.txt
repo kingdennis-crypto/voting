@@ -1,0 +1,113 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+import SelectComponent from '@/components/select'
+
+type Organisation = {
+  name: string
+  peers: string[]
+}
+
+type Channel = {
+  name: string
+  organisation: Organisation[]
+}
+
+export default function AdminPage() {
+  const [channels, setChannels] = useState<Channel[]>([])
+  const [selectedChannel, setSelectedChannel] = useState<Channel>()
+  const [selectedOrg, setSelectedOrg] = useState<Organisation>()
+
+  const [selectedConfig, setSelectedConfig] = useState<Channel>()
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:5050/config/channel')
+      .then((res) => {
+        setChannels(res.data.payload)
+        setSelectedChannel(res.data.payload[0] as any)
+        setSelectedConfig(res.data.payload[0] as any)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }, [])
+
+  useEffect(() => {
+    console.log(selectedConfig)
+  }, [])
+
+  const handleConnectionSave = () => {
+    // axios
+    //   .post('http://localhost:5050/channel', )
+    //   .then((res) => {
+    //     console.log(res)
+    //   })
+    //   .catch((err) => {
+    //     console.log(err)
+    //   })
+  }
+
+  return (
+    <div>
+      <p>Admin page</p>
+      <label htmlFor="channel-select">Channel</label>
+      <br />
+      <select
+        id="channel-select"
+        // onChange={(e) => setSelectedConfig({ name: JSON.parse(e.target.value) })}
+      >
+        {channels.map((item: Channel, index: number) => (
+          <option key={index} value={JSON.stringify(item)}>
+            {item.name}
+          </option>
+        ))}
+      </select>
+      <br />
+      <label htmlFor="organisation-select">Organisation</label>
+      <br />
+      <select
+        id="organisation-select"
+        onChange={(e) => setSelectedOrg(JSON.parse(e.target.value))}
+      >
+        {selectedChannel ? (
+          selectedChannel.organisation.map(
+            (item: Organisation, index: number) => (
+              <option key={index} value={JSON.stringify(item)}>
+                {item.name}
+              </option>
+            )
+          )
+        ) : (
+          <option>Loading...</option>
+        )}
+      </select>
+      <br />
+      {selectedOrg && (
+        <>
+          <label htmlFor="peer-select">Peer</label>
+          <br />
+          <select id="peer-select">
+            {selectedOrg.peers.map((item: string, index: number) => (
+              <option key={index} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
+      <br />
+      <button
+        onClick={handleConnectionSave}
+        className="bg-blue-500 text-white rounded-md px-4 py-2"
+      >
+        Save connection settings
+      </button>
+      <br />
+      <a href={'/admin/candidate'}>Candidates</a>
+      <br />
+      <a href={'/admin/party'}>Parties</a>
+    </div>
+  )
+}

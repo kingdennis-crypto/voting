@@ -8,9 +8,7 @@ import {
 import Candidate from '../models/candidate'
 import stringify from 'json-stringify-deterministic'
 import sortKeysRecursive from 'sort-keys-recursive'
-import Party from '../models/party'
-
-import DummyCandidates from '../data/dummyCandidates'
+import AuthorizationHelper from '../utils/helpers/authorization'
 
 @Info({
   title: 'CandidateTransfer',
@@ -18,26 +16,15 @@ import DummyCandidates from '../data/dummyCandidates'
 })
 export class CandidateTransferContract extends Contract {
   @Transaction()
-  public async InitLedger(ctx: Context): Promise<void> {
-    // TODO: Add dummy data
-    const candidates: Candidate[] = DummyCandidates
-
-    candidates.forEach(async (candidate) => {
-      await ctx.stub.putState(
-        candidate.id,
-        Buffer.from(stringify(sortKeysRecursive(candidate)))
-      )
-      console.info(`Candidate ${candidate.id} intialized`)
-    })
-  }
-
-  @Transaction()
   public async CreateCandidate(
     ctx: Context,
     id: string,
     name: string,
     partyId: string
   ): Promise<string> {
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only an admin can create a party')
+
     id = `c-${id}`
 
     const exists = await this.CandidateExists(ctx, id)
@@ -74,6 +61,9 @@ export class CandidateTransferContract extends Contract {
     name: string,
     partyId: string
   ): Promise<string> {
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only an admin can create a party')
+
     const exists = await this.CandidateExists(ctx, id)
 
     if (!exists) {
@@ -90,6 +80,9 @@ export class CandidateTransferContract extends Contract {
 
   @Transaction()
   public async DeleteCandidate(ctx: Context, id: string): Promise<void> {
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only an admin can create a party')
+
     const exists = await this.CandidateExists(ctx, id)
 
     if (!exists) {
