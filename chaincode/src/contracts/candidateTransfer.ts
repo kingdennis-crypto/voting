@@ -34,11 +34,10 @@ export class CandidateTransferContract extends Contract {
     }
 
     const candidate: Candidate = { id, name, partyId }
+    const payload = Buffer.from(stringify(sortKeysRecursive(candidate)))
 
-    await ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(candidate)))
-    )
+    await ctx.stub.putState(id, payload)
+    ctx.stub.setEvent('CreateCandidateEvent', payload)
 
     return JSON.stringify(candidate)
   }
@@ -72,14 +71,16 @@ export class CandidateTransferContract extends Contract {
 
     // const candidate: Candidate = new Candidate(id, name, partyId)
     const candidate: Candidate = { id, name, partyId }
+    const payload = Buffer.from(stringify(sortKeysRecursive(candidate)))
 
-    ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(candidate))))
+    ctx.stub.putState(id, payload)
+    ctx.stub.setEvent('UpdateCandidateEvent', payload)
 
     return JSON.stringify(candidate)
   }
 
   @Transaction()
-  public async DeleteCandidate(ctx: Context, id: string): Promise<void> {
+  public async DeleteCandidate(ctx: Context, id: string) {
     if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
       throw new Error('Only an admin can create a party')
 
@@ -89,7 +90,13 @@ export class CandidateTransferContract extends Contract {
       throw new Error(`The candidate ${id} does not exist`)
     }
 
-    return ctx.stub.deleteState(id)
+    const candidate = this.ReadCandidate(ctx, id)
+    const payload = Buffer.from(stringify(sortKeysRecursive(candidate)))
+
+    await ctx.stub.deleteState(id)
+    ctx.stub.setEvent('DeleteCandidateEvent', payload)
+
+    return JSON.stringify(candidate)
   }
 
   @Transaction(false)
