@@ -12,7 +12,6 @@ import WalletHelper from '../utils/helpers/wallet'
 
 const utf8Decoder = new TextDecoder()
 
-// TODO: Make this singleton so that the connection will only be made once to save throughput
 export default class Repository {
   private static instance: Repository
 
@@ -32,7 +31,13 @@ export default class Repository {
   public async connectToContract(): Promise<void> {
     const gateway = new Gateway()
     const config = await ConfigHelper.getConfig()
-    const organisation = config.organisations[0]
+
+    const selectedOrg = config.connection.organisation
+    const organisation: any = config.organisations.find(
+      (org) => org.id === selectedOrg
+    )
+
+    // console.log(organisation)
 
     if ((await config.wallet.list()).length === 0) {
       await WalletHelper.enrollAdmin()
@@ -54,6 +59,8 @@ export default class Repository {
       )
 
       const network = await gateway.getNetwork(config.connection.channel)
+      // console.log('Channel', network.getChannel())
+      console.log('Gateway', network.getGateway())
 
       const partyContract = network.getContract(
         'votenet',
