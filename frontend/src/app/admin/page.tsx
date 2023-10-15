@@ -7,35 +7,15 @@ import axios from 'axios'
 // Inspiration
 // https://dribbble.com/shots/21751238-Asset-Group-Setup-1-3
 
-type IChannelObj = {
-  name: string
-  organisation: {
-    name: string
-    peers: string[]
-  }[]
-}
-
-type ISelectedConfig = {
-  name: string
-  organisation: {
-    name: string
-    peer: string
-  }
-}
-
-type Organisation = {
-  id: string
-  peers: string[]
-}
-
-type Selected = { user: string; channel: string }
-
 export default function AdminPage() {
   const [identities, setIdentities] = useState<string[]>([])
   const [channels, setChannels] = useState<string[]>([])
+  const [organisations, setOrganisations] = useState<any[]>([])
 
-  const [selectedChannel, setSelectedChannel] = useState<string>()
+  const [selectedChannel, setSelectedChannel] = useState<any>()
   const [selectedUser, setSelectedUser] = useState<string>()
+  const [selectedOrg, setSelectedOrg] = useState<any>()
+  const [selectedPeer, setSelectedPeer] = useState<string>()
 
   useEffect(() => {
     axios
@@ -53,8 +33,22 @@ export default function AdminPage() {
     axios
       .get('http://localhost:5050/config/connection')
       .then((res: any) => {
-        setChannels(res.data.payload.channels)
-        setSelectedChannel(res.data.payload.channels[0])
+        const { channels, organisations, selected } = res.data.payload
+        console.log({ channels, organisations, selected })
+
+        setChannels(channels)
+        setSelectedChannel(channels[0])
+        setOrganisations(organisations)
+
+        setSelectedUser(selected.user)
+        setSelectedPeer(organisations[0].peers)
+        setSelectedOrg(
+          (organisations as any[]).find(
+            (item) => item.id === selected.organisation
+          )
+        )
+        setSelectedPeer(selected.peer)
+        setSelectedChannel(selected.channel)
       })
       .catch((err) => {
         console.log(err)
@@ -66,9 +60,12 @@ export default function AdminPage() {
       .post('http://localhost:5050/config/connection', {
         channel: selectedChannel,
         user: selectedUser,
+        organisation: selectedOrg.id,
+        peer: selectedPeer,
       })
       .then((res) => {
         console.log(res)
+        alert('Successfully updated the connection configuration')
       })
       .catch((err) => {
         console.log(err)
@@ -82,6 +79,7 @@ export default function AdminPage() {
         description="Which user you will call the network with"
       >
         <select
+          value={selectedUser}
           onChange={(e) => setSelectedUser(e.target.value)}
           className="bg-gray-50 border-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
         >
@@ -98,10 +96,45 @@ export default function AdminPage() {
         description="Select the channel to communicate in"
       >
         <select
+          value={selectedChannel}
           onChange={(e) => setSelectedChannel(e.target.value)}
           className="bg-gray-50 border-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
         >
           {channels.map((item: string, index: number) => (
+            <option key={index} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+      </AdminSection>
+      <hr className="my-4" />
+      <AdminSection
+        label="Organisations"
+        description="Please select which organisation you want to call from"
+      >
+        <select
+          value={JSON.stringify(selectedOrg)}
+          onChange={(e) => setSelectedOrg(JSON.parse(e.target.value))}
+          className="bg-gray-50 border-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+        >
+          {organisations.map((item: any, index: number) => (
+            <option key={index} value={JSON.stringify(item)}>
+              {item.id}
+            </option>
+          ))}
+        </select>
+      </AdminSection>
+      <hr className="my-4" />
+      <AdminSection
+        label="Peers"
+        description="Please select from which peer you want to call from"
+      >
+        <select
+          value={selectedPeer}
+          onChange={(e) => setSelectedPeer(e.target.value)}
+          className="bg-gray-50 border-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+        >
+          {selectedOrg?.peers.map((item: any, index: number) => (
             <option key={index} value={item}>
               {item}
             </option>

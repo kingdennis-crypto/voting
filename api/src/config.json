@@ -20,7 +20,7 @@
   "connection": {
     "user": "admin",
     "peer": "peer0",
-    "organisation": "org1.example.com",
+    "organisation": "org2.example.com",
     "channel": "election1",
     "gatewayDiscovery": {
       "enabled": true,

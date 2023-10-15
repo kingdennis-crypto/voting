@@ -67,7 +67,7 @@ export default class CandidateRepo {
 
   public async delete(id: string) {
     try {
-      return this.repo.submitTransaction('candidate', id)
+      return this.repo.submitTransaction('candidate', 'DeleteCandidate', id)
     } catch (error) {
       throw error
     }

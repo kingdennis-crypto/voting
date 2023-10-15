@@ -16,6 +16,7 @@ router.get('/connection', async (req: Request, res: Response) => {
 
     const returnObj = {
       channels: config.channels,
+      selected: config.connection,
       organisations: config.organisations.map((item) => ({
         id: item.id,
         peers: Object.keys((item.connectionProfile as CcpConfig).peers),
@@ -30,9 +31,9 @@ router.get('/connection', async (req: Request, res: Response) => {
 
 router.post('/connection', (req: Request, res: Response) => {
   try {
-    const { user, channel } = req.body
+    const { user, channel, organisation, peer } = req.body
 
-    ConfigHelper.setConnectionDetails(user, channel)
+    ConfigHelper.setConnectionDetails(user, channel, organisation, peer)
 
     ResponseHelper.successResponse(
       res,

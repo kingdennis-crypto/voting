@@ -17,16 +17,32 @@ export default function AdminCandidates() {
       })
   }, [])
 
+  if (!candidates) {
+    return <p>Loading...</p>
+  }
+
   return (
     <div>
-      <p>Candidates</p>
-      <div>
-        {candidates ? (
-          candidates.map((item, index) => <p key={index}>{item.name}</p>)
-        ) : (
-          <p>Loading</p>
-        )}
+      <div className="inline-flex justify-between w-full">
+        <p className="text-2xl">Candidates</p>
+        <a href="/admin/candidates/add">Add candidate</a>
       </div>
+      <ul className="w-full text-gray-900 bg-white border border-gray-200 rounded-lg overflow-hidden">
+        {candidates.map((item, index) => (
+          <li
+            key={index}
+            className="w-full px-4 py-2 border-b last:border-b-0 border-gray-200 inline-flex justify-between items-center"
+          >
+            <p>{item.name}</p>
+            <a
+              href={`/admin/candidates/${item.id}`}
+              className="bg-blue-500 text-white"
+            >
+              Edit
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
