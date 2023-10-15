@@ -79,7 +79,9 @@ export default class ConfigHelper {
 
   public static async setConnectionDetails(
     user: string,
-    channel: string
+    channel: string,
+    organisation: string,
+    peer: string
   ): Promise<void> {
     try {
       const configPath = path.resolve('src', 'config.json')
@@ -89,6 +91,8 @@ export default class ConfigHelper {
 
       config.connection.user = user
       config.connection.channel = channel
+      config.connection.organisation = organisation
+      config.connection.peer = peer
 
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
       Repository.getInstance().connectToContract()

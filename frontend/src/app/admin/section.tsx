@@ -6,7 +6,7 @@ type Props = {
 
 export default function AdminSection({ label, description, children }: Props) {
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-row items-center">
       <div className="w-1/3 inline-flex flex-col">
         <p className="text-lg font-semibold">{label}</p>
         <p className="text-sm">{description}</p>

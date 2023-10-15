@@ -13,6 +13,7 @@ export default withPageAuthRequired(function AdminLayout({
       <div className="border-2 border-gray-400 mb-2 p-2 inline-flex flex-row justify-between w-full">
         <a href={'/api/auth/logout'}>Logout</a>
         <div className="space-x-2">
+          <a href="/admin">Admin Home</a>
           <a href="/admin/parties">Parties</a>
           <a href="/admin/candidates">Candidates</a>
         </div>
