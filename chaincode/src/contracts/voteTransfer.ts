@@ -39,7 +39,10 @@ export class VoteTransferContract extends Contract {
 
     const vote: Vote = { id, timestamp, candidateId }
 
-    await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(vote))))
+    const object = Buffer.from(stringify(sortKeysRecursive(vote)))
+
+    await ctx.stub.putState(id, object)
+    ctx.stub.setEvent('CreateVoteEvent', object)
 
     return JSON.stringify(vote)
   }

@@ -32,10 +32,10 @@ export class PartyTransferContract extends Contract {
     }
 
     const party: Party = { id, name }
-    await ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(party)))
-    )
+    const payload = Buffer.from(stringify(sortKeysRecursive(party)))
+
+    await ctx.stub.putState(id, payload)
+    ctx.stub.setEvent('CreatePartyEvent', payload)
 
     return JSON.stringify(party)
   }
@@ -68,13 +68,16 @@ export class PartyTransferContract extends Contract {
 
     // const party: Party = new Party(id, name)
     const party: Party = { id, name }
-    ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(party))))
+    const payload = Buffer.from(stringify(sortKeysRecursive(party)))
+
+    await ctx.stub.putState(id, payload)
+    ctx.stub.setEvent('UpdateParty', payload)
 
     return JSON.stringify(party)
   }
 
   @Transaction()
-  public async DeleteParty(ctx: Context, id: string): Promise<void> {
+  public async DeleteParty(ctx: Context, id: string) {
     if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
       throw new Error('Only an admin can create a party')
 
@@ -86,6 +89,8 @@ export class PartyTransferContract extends Contract {
 
     const candidates = await ctx.stub.getStateByRange('c-', 'c-~')
     let result = await candidates.next()
+
+    // TODO: Create function to delete all the candidates linked to this party
 
     // while (!result.done) {
     //   const strValue = Buffer.from(result.value.value.toString()).toString(
@@ -104,7 +109,13 @@ export class PartyTransferContract extends Contract {
     //   await ctx.stub.deleteState(result.value.key)
     // }
 
-    return await ctx.stub.deleteState(id)
+    const party = this.ReadParty(ctx, id)
+    const payload = Buffer.from(stringify(sortKeysRecursive(party)))
+
+    await ctx.stub.deleteState(id)
+    ctx.stub.setEvent('DeletePartyEvent', payload)
+
+    return JSON.stringify(party)
   }
 
   @Transaction(false)
