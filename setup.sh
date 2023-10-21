@@ -45,3 +45,5 @@ echo "Setting up the blockchain explorer"
 ./explorer.sh
 
 echo -e "\nSuccessfully created two channels and it's peers and organisations!\n"
+
+export FABRIC_PATH=$PWD

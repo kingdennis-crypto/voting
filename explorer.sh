@@ -7,6 +7,8 @@ source ./variables.sh
 # ADMIN_PRIV_KEY_PATH=""
 # SIGNED_CERT_PATH=""
 
+# TODO: Call function to create admin wallet identity before starting the explorer
+
 echo "Stopping the old explorer containers"
 cd ./explorer2
 docker compose down
@@ -26,9 +28,9 @@ wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/dock
 
 echo "Changing the values for our wanted outcome"
 echo "PORT=8080" > .env
-echo "EXPLORER_CONFIG_FILE_PATH=./examples/net1/config.json" >> .env
-echo "EXPLORER_PROFILE_DIR_PATH=./examples/net1/connection-profile" >> .env
-echo "FABRIC_CRYPTO_PATH=/fabric-path/fabric-samples/test-network/organizations" >> .env
+echo "EXPLORER_CONFIG_FILE_PATH=./config.json" >> .env
+echo "EXPLORER_PROFILE_DIR_PATH=./connection-profile" >> .env
+echo "FABRIC_CRYPTO_PATH=./organizations" >> .env
 
 echo "Copying the organizations folder to the explorer folder"
 cp -r ../test-network/organizations ./organizations
@@ -36,15 +38,19 @@ cp -r ../test-network/organizations ./organizations
 echo "Replacing the connection values"
 cd ../test-network/organizations
 ADMIN_PRIV_KEY_PATH="/tmp/crypto/$(find "peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore" -type f -print -quit)"
-SIGNED_CERT_PATH="/tmp/crypto$(find "peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts" -type f -print -quit)"
+SIGNED_CERT_PATH="/tmp/crypto/$(find "peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts" -type f -print -quit)"
 cd ../../explorer2/connection-profile
 
 jq --arg new_path "$ADMIN_PRIV_KEY_PATH" \
    --arg new_cert "$SIGNED_CERT_PATH" \
+   --arg old_channel "$OLD_CHANNEL" \
+   --arg new_channel "$NEW_CHANNEL" \
    '.organizations.Org1MSP.adminPrivateKey.path = $new_path |
-    .organizations.Org1MSP.signedCert.path = $new_cert' \
+    .organizations.Org1MSP.signedCert.path = $new_cert |
+    .channels[$new_channel] = .channels[$old_channel] | del(.channels[$old_channel])' \
     test-network.json > temp.json && mv temp.json test-network.json
 
 echo "Start the docker containers"
 cd ../
 docker compose up -d
+cd ../

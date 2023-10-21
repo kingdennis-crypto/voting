@@ -14,3 +14,6 @@ export FABRIC_PATH=$PWD
 export FABRIC_CFG_PATH=$(PWD)/config
 export PATH=$(PWD)/bin:$PATH
 export CORE_PEER_MSPCONFIGPATH=$(PWD)/test-network/organizations/ordererOrganizations/example.com/msp
+
+export OLD_CHANNEL="mychannel"
+export NEW_CHANNEL="election1"
