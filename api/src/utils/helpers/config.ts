@@ -53,25 +53,14 @@ export default class ConfigHelper {
     }
   }
 
-  public static async initialise(userID: string): Promise<void> {
+  public static async initialise(): Promise<void> {
     try {
       const configPath = path.resolve('src', 'config.json')
       const config: Config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
 
       config.initialised = true
 
-      // TODO: Make a function to get the organisation information for the config.json
-      // const organisations: string[] = fs.readdirSync(
-      //   // path.resolve('test-network', 'organizations', 'peerOrganizations')
-      //   path.resolve('..', 'peerOrganizations')
-      // )
-
-      // console.log(organisations)
-
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
-
-      // await WalletHelper.enrollAdmin()
-      // await WalletHelper.enrollUser(userID, 'user')
     } catch (error) {
       throw error
     }

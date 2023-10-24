@@ -1,4 +1,10 @@
-import { Gateway, GatewayOptions, Contract } from 'fabric-network'
+import {
+  Gateway,
+  GatewayOptions,
+  Contract,
+  Wallets,
+  ContractEvent,
+} from 'fabric-network'
 
 import ConfigHelper from '../utils/helpers/config'
 
@@ -9,6 +15,9 @@ import { TextDecoder } from 'util'
 import { ConnectionProfile } from '../utils/types'
 import { CcpConfig } from '../utils/types/ccp.type'
 import WalletHelper from '../utils/helpers/wallet'
+import SocketHelper from '../utils/helpers/socket'
+
+import EventStrategies from 'fabric-network/lib/impl/event/defaulteventhandlerstrategies'
 
 const utf8Decoder = new TextDecoder()
 
@@ -33,18 +42,21 @@ export default class Repository {
     const config = await ConfigHelper.getConfig()
 
     const selectedOrg = config.connection.organisation
-    const organisation: any = config.organisations.find(
+    const organisation = config.organisations.find(
       (org) => org.id === selectedOrg
     )
 
-    // console.log(organisation)
+    const walletPath = path.resolve(process.env.FABRIC_PATH, 'wallet')
+    const wallet = await Wallets.newFileSystemWallet(walletPath)
 
-    if ((await config.wallet.list()).length === 0) {
+    if ((await wallet.list()).length === 0) {
       await WalletHelper.enrollAdmin()
+      await WalletHelper.enrollUser('voter', 'voter')
     }
 
+    // FIXME: If user is not admin we get a unauthorized access exception
     const gatewayOpts: GatewayOptions = {
-      wallet: config.wallet,
+      wallet: wallet,
       identity: config.connection.user,
       discovery: {
         asLocalhost: true,
@@ -59,8 +71,6 @@ export default class Repository {
       )
 
       const network = await gateway.getNetwork(config.connection.channel)
-      // console.log('Channel', network.getChannel())
-      console.log('Gateway', network.getGateway())
 
       const partyContract = network.getContract(
         'votenet',
@@ -96,6 +106,15 @@ export default class Repository {
     try {
       if (this.contract === null || this.contract === undefined)
         await this.connectToContract()
+
+      // FIXME: Events not working!
+      const listener = async (event: ContractEvent) => {
+        try {
+          console.log(await event.getTransactionEvent(), await event.eventName)
+        } catch (error) {
+          console.error('Error in event listener:', error)
+        }
+      }
 
       const contractObj: Contract = this.contract[contract]
       const data: ArrayBuffer = await contractObj.submitTransaction(

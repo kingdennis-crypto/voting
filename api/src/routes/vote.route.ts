@@ -66,4 +66,22 @@ router.post('/', async (req: Request, res: Response) => {
   }
 })
 
+router.get('/data/token', async (req: Request, res: Response) => {
+  try {
+    const unusedTokens = await vRepo.getUnusedTokens()
+    const voterBalance = await vRepo.getVoterBalance()
+    const totalSupply = await vRepo.getTotalSupply()
+
+    console.log(voterBalance)
+
+    ResponseHelper.successResponse(res, 200, {
+      unusedTokens,
+      voterBalance,
+      totalSupply,
+    })
+  } catch (error) {
+    ResponseHelper.errorResponse(res, 500, error.message)
+  }
+})
+
 export default router

@@ -8,9 +8,46 @@ export default class VoteRepository {
     this.repo = Repository.getInstance()
   }
 
+  public async initialise(amount: number) {
+    try {
+      return await this.repo.submitTransaction(
+        'vote',
+        'DistributeTokens',
+        amount.toString()
+      )
+    } catch (error) {
+      throw error
+    }
+  }
+
+  public async getUnusedTokens() {
+    try {
+      return await this.repo.submitTransaction('vote', 'GetUnusedTokens')
+    } catch (error) {
+      throw error
+    }
+  }
+
+  public async getVoterBalance() {
+    try {
+      return await this.repo.submitTransaction('vote', 'GetVoterBalance')
+      // return await this.repo.submitTransaction('vote', 'GetAllVoterBalances')
+    } catch (error) {
+      throw error
+    }
+  }
+
+  public async getTotalSupply() {
+    try {
+      return await this.repo.submitTransaction('vote', 'GetTotalSupply')
+    } catch (error) {
+      throw error
+    }
+  }
+
   public async getAll() {
     try {
-      return await this.repo.submitTransaction('vote', 'GetAllVotes', 'admin')
+      return await this.repo.submitTransaction('vote', 'GetAllVotes')
     } catch (error) {
       throw error
     }
@@ -18,7 +55,7 @@ export default class VoteRepository {
 
   public async getById(id: string) {
     try {
-      return await this.repo.submitTransaction('vote', 'ReadVote', 'admin', id)
+      return await this.repo.submitTransaction('vote', 'ReadVote', id)
     } catch (error) {
       throw error
     }
@@ -31,8 +68,7 @@ export default class VoteRepository {
 
       return await this.repo.submitTransaction(
         'vote',
-        'CreateVote',
-        'admin',
+        'Vote',
         id,
         timestamp,
         candidateId
