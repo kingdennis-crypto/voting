@@ -15,7 +15,7 @@ export default function AdminVote() {
 
   useEffect(() => {
     axios
-      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/votes/data/token`)
+      .get('http://localhost:5050/votes/data/token')
       .then((res) => {
         console.log(res.data.payload)
         setData(res.data.payload)
@@ -27,7 +27,7 @@ export default function AdminVote() {
 
   useEffect(() => {
     axios
-      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/config/connection`)
+      .get('http://localhost:5050/config/connection')
       .then((res) => {
         console.log(res.data.payload.selected)
         setConnection(res.data.payload.selected)

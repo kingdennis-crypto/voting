@@ -1,6 +1,7 @@
 'use client'
 
 import axios from 'axios'
+import axios from 'axios'
 import {
   createContext,
   useContext,
@@ -11,18 +12,21 @@ import {
 
 interface ConfigInterface {
   isInitialised: boolean
+  isInitialised: boolean
 }
 
+const ConfigContext = createContext<ConfigInterface>({ isInitialised: false })
 const ConfigContext = createContext<ConfigInterface>({ isInitialised: false })
 
 type Props = { children: ReactNode }
 
 export function ConfigProvider({ children }: Props): ReactNode {
   const [isInitialised, setInitialised] = useState<boolean>(false)
+  const [isInitialised, setInitialised] = useState<boolean>(false)
 
   useEffect(() => {
     axios
-      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/config/initialized`)
+      .get('http://localhost:5050/config/initialized')
       .then((res) => {
         console.log(res.data.payload)
         setInitialised(res.data.payload.initialised)
@@ -33,6 +37,7 @@ export function ConfigProvider({ children }: Props): ReactNode {
   }, [])
 
   return (
+    <ConfigContext.Provider value={{ isInitialised }}>
     <ConfigContext.Provider value={{ isInitialised }}>
       {children}
     </ConfigContext.Provider>
