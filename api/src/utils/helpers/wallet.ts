@@ -132,8 +132,15 @@ export default class WalletHelper {
         )
       }
 
-      const caURL = (organisation.connectionProfile as CcpConfig)
-        .certificateAuthorities[organisation.caName].url
+      // Connection profile
+      const cp = JSON.parse(
+        fs.readFileSync(
+          path.resolve('..', organisation.connectionProfile as string),
+          'utf-8'
+        )
+      ) as CcpConfig
+
+      const caURL = cp.certificateAuthorities[organisation.caName].url
       const ca = new FabricCAServices(caURL)
 
       // Build a user object for authenticating with the CA
@@ -146,11 +153,6 @@ export default class WalletHelper {
         affiliation: 'org1',
         enrollmentID: userId,
         role: role,
-        attrs: [
-          { name: 'id', value: userId, ecert: true },
-          { name: 'name', value: userId, ecert: true },
-          { name: 'role', value: role, ecert: true },
-        ],
       }
 
       // Register the user, enroll the user, and import the new identity into the wallet
@@ -159,11 +161,6 @@ export default class WalletHelper {
       const enrollmentData: IEnrollmentRequest = {
         enrollmentID: userId,
         enrollmentSecret: secret,
-        attr_reqs: [
-          { name: 'id', optional: false },
-          { name: 'name', optional: false },
-          { name: 'role', optional: false },
-        ],
       }
 
       const enrollment = await ca.enroll(enrollmentData)
@@ -178,7 +175,10 @@ export default class WalletHelper {
       }
 
       await wallet.put(userId, x509Identity)
+
+      return
     } catch (error) {
+      console.log(error)
       throw error
     }
   }

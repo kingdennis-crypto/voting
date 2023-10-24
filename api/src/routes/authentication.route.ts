@@ -19,10 +19,10 @@ router.post('/admin', async (req: Request, res: Response) => {
 
 router.post('/user', async (req: Request, res: Response) => {
   try {
-    const { userId, name, role } = req.body
+    const { userId, role } = req.body
 
     await WalletHelper.enrollUser(userId, role)
-    res.status(200).json({ message: 'Successfully created a user' })
+    ResponseHelper.successResponse(res, 200, 'Successfully created the user')
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
