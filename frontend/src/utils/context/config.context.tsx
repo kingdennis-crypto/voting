@@ -1,57 +1,39 @@
 'use client'
 
+import axios from 'axios'
 import {
   createContext,
   useContext,
   ReactNode,
   useState,
-  Dispatch,
-  SetStateAction,
   useEffect,
 } from 'react'
 
 interface ConfigInterface {
-  organisation: string
-  setOrganisation: Dispatch<SetStateAction<string>>
-  peer: string
-  setPeer: Dispatch<SetStateAction<string>>
+  isInitialised: boolean
 }
 
-const ConfigContext = createContext<ConfigInterface>({
-  organisation: '',
-  setOrganisation: () => {},
-  peer: '',
-  setPeer: () => {},
-})
+const ConfigContext = createContext<ConfigInterface>({ isInitialised: false })
 
 type Props = { children: ReactNode }
 
 export function ConfigProvider({ children }: Props): ReactNode {
-  const [organisation, setOrganisation] = useState<string>('')
-  const [peer, setPeer] = useState<string>('')
+  const [isInitialised, setInitialised] = useState<boolean>(false)
 
   useEffect(() => {
-    if (organisation === '') {
-      setOrganisation(localStorage.getItem('organisation') || '')
-      return
-    }
-
-    localStorage.setItem('organisation', organisation)
-  }, [organisation])
-
-  useEffect(() => {
-    if (peer === '') {
-      setPeer(localStorage.getItem('peer') || '')
-      return
-    }
-
-    localStorage.setItem('peer', peer)
-  }, [peer])
+    axios
+      .get('http://localhost:5050/config/initialized')
+      .then((res) => {
+        console.log(res.data.payload)
+        setInitialised(res.data.payload.initialised)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }, [])
 
   return (
-    <ConfigContext.Provider
-      value={{ organisation, setOrganisation, peer, setPeer }}
-    >
+    <ConfigContext.Provider value={{ isInitialised }}>
       {children}
     </ConfigContext.Provider>
   )

@@ -7,8 +7,10 @@ import ConfigHelper from '../utils/helpers/config'
 import WalletHelper from '../utils/helpers/wallet'
 import Repository from '../repositories/repo'
 import { CcpConfig } from '../utils/types/ccp.type'
+import VoteRepository from '../repositories/vote.repo'
 
 const router: Router = express.Router()
+const voteRepo = new VoteRepository()
 
 router.get('/connection', async (req: Request, res: Response) => {
   try {
@@ -50,6 +52,32 @@ router.get('/identities', async (req: Request, res: Response) => {
     const wallets = await WalletHelper.getWallets()
     ResponseHelper.successResponse(res, 200, wallets)
   } catch (error) {
+    ResponseHelper.errorResponse(res, 500, error.message)
+  }
+})
+
+router.get('/initialized', async (req: Request, res: Response) => {
+  try {
+    const config = await ConfigHelper.getConfig()
+
+    ResponseHelper.successResponse(res, 200, {
+      initialised: config.initialised,
+    })
+  } catch (error) {
+    ResponseHelper.errorResponse(res, 500, error.message)
+  }
+})
+
+router.post('/initialized', async (req: Request, res: Response) => {
+  try {
+    const { amount } = req.body
+    const data = await voteRepo.initialise(amount)
+    await ConfigHelper.initialise()
+    console.log(req.body, data)
+
+    ResponseHelper.successResponse(res, 200, 'Initialise')
+  } catch (error) {
+    console.log(error)
     ResponseHelper.errorResponse(res, 500, error.message)
   }
 })

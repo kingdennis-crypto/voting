@@ -9,9 +9,7 @@ import Vote from '../models/vote'
 
 import stringify from 'json-stringify-deterministic'
 import sortKeysRecursive from 'sort-keys-recursive'
-import Candidate from '../models/candidate'
 
-import DummyVotes from '../data/dummyVotes'
 import AuthorizationHelper from '../utils/helpers/authorization'
 
 @Info({
@@ -19,36 +17,79 @@ import AuthorizationHelper from '../utils/helpers/authorization'
   description: 'Smart contract for voting on candidates',
 })
 export class VoteTransferContract extends Contract {
+  // A mapping of addresses to their balance
+  private balances: Record<string, number> = {}
+  private totalSupply: number = 0
+  private usedTokens: number = 0
+
   @Transaction()
-  public async CreateVote(
+  public async DistributeTokens(ctx: Context, amount: number) {
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only an admin can distribute the tokens')
+
+    this.totalSupply = amount
+    this.usedTokens = 0
+    this.balances = {}
+
+    return JSON.stringify({ message: 'Token distributed successfully' })
+  }
+
+  @Transaction()
+  public async Vote(
     ctx: Context,
     id: string,
     timestamp: string,
     candidateId: string
-  ): Promise<string> {
-    if (!AuthorizationHelper.isVoter(ctx.clientIdentity))
-      throw new Error('Only a voter can vote!')
+  ) {
+    const cID = ctx.clientIdentity.getID()
+    const vID = 'v-' + id
 
-    id = `v-${id}`
+    // if (!AuthorizationHelper.isVoter(ctx.clientIdentity))
+    // TODO: Change this to isVoter
+    if (!AuthorizationHelper.isAdmin(ctx.clientIdentity))
+      throw new Error('Only a admin can vote!')
 
-    const exists = await this.VoteExists(ctx, id)
+    const vote: Vote = { id: vID, timestamp, candidateId }
 
-    if (exists) {
-      throw new Error(`The vote ${id} already exists`)
+    const payload = Buffer.from(stringify(sortKeysRecursive(vote)))
+
+    await ctx.stub.putState(vID, payload)
+    ctx.stub.setEvent('VoteEvent', payload)
+
+    this.usedTokens++
+    // this.balances[cID]++
+
+    if (this.balances[cID]) {
+      this.balances[cID]++
+    } else {
+      this.balances[cID] = 1
     }
-
-    const vote: Vote = { id, timestamp, candidateId }
-
-    const object = Buffer.from(stringify(sortKeysRecursive(vote)))
-
-    await ctx.stub.putState(id, object)
-    ctx.stub.setEvent('CreateVoteEvent', object)
 
     return JSON.stringify(vote)
   }
 
   @Transaction(false)
-  public async ReadCandidate(ctx: Context, id: string): Promise<string> {
+  public async GetUnusedTokens(ctx: Context) {
+    return this.totalSupply - this.usedTokens
+  }
+
+  @Transaction(false)
+  public async GetAllVoterBalances(ctx: Context) {
+    return JSON.stringify(this.balances)
+  }
+
+  @Transaction(false)
+  public async GetVoterBalance(ctx: Context) {
+    return this.balances[ctx.clientIdentity.getID()]
+  }
+
+  @Transaction(false)
+  public async GetTotalSupply(ctx: Context) {
+    return this.totalSupply
+  }
+
+  @Transaction(false)
+  public async ReadVote(ctx: Context, id: string): Promise<string> {
     const voteJSON = await ctx.stub.getState(id)
 
     if (!voteJSON || voteJSON.length === 0) {
