@@ -13,7 +13,7 @@ export default function AdminCandidateDetail({ params }: Param) {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/parties')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/parties`)
       .then((res: any) => {
         setParties(res.data.payload)
       })
@@ -22,7 +22,7 @@ export default function AdminCandidateDetail({ params }: Param) {
       })
 
     axios
-      .get(`http://localhost:5050/candidates/${params.id}`)
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/candidates/${params.id}`)
       .then((res) => {
         setCandidate(res.data.payload)
       })
@@ -33,7 +33,10 @@ export default function AdminCandidateDetail({ params }: Param) {
 
   const handleSave = () => {
     axios
-      .put(`http://localhost:5050/candidates/${candidate.id}`, candidate)
+      .put(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/candidates/${candidate.id}`,
+        candidate
+      )
       .then((res) => {
         console.log(res)
         alert('Successfully updates the candidate')
@@ -46,7 +49,9 @@ export default function AdminCandidateDetail({ params }: Param) {
 
   const handleDelete = () => {
     axios
-      .delete(`http://localhost:5050/candidates/${candidate.id}`)
+      .delete(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}/candidates/${candidate.id}`
+      )
       .then((res) => {
         console.log(res)
         alert('Successfulyl deleted the party')

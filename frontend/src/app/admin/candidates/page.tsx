@@ -8,7 +8,7 @@ export default function AdminCandidates() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/candidates')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/candidates`)
       .then((res) => {
         setCandidates(res.data.payload)
       })

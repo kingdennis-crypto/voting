@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, AxiosError } from 'axios'
 
-const BASE_URL = 'http://localhost:5050'
+const BASE_URL = '${process.env.NEXT_PUBLIC_SERVER_URL}'
 type Method = 'GET' | 'POST' | 'DELETE' | 'PUT'
 
 export default class RequestHelper {
