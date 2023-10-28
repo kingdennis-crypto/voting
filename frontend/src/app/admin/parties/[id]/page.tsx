@@ -12,7 +12,7 @@ export default function AdminPartyDetail({ params }: Param) {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5050/parties/${params.id}`)
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/parties/${params.id}`)
       .then((res) => {
         setParty(res.data.payload)
       })
@@ -23,7 +23,7 @@ export default function AdminPartyDetail({ params }: Param) {
 
   const handleSave = () => {
     axios
-      .put(`http://localhost:5050/parties/${params.id}`, party)
+      .put(`${process.env.NEXT_PUBLIC_SERVER_URL}/parties/${params.id}`, party)
       .then((res) => {
         console.log(res)
         alert('Successfully updated the party')
@@ -36,7 +36,7 @@ export default function AdminPartyDetail({ params }: Param) {
 
   const handleDelete = () => {
     axios
-      .delete(`http://localhost:5050/parties/${params.id}`)
+      .delete(`${process.env.NEXT_PUBLIC_SERVER_URL}/parties/${params.id}`)
       .then((res) => {
         console.log(res)
         alert('Successfully deleted the party')

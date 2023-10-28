@@ -19,8 +19,12 @@ export default function Home() {
   const [amount, setAmount] = useState<number>(10_000)
 
   const initialiseData = () => {
+    console.log(process.env.NEXT_PUBLIC_SERVER_URL)
+
     axios
-      .post('http://localhost:5050/config/initialized', { amount })
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/config/initialized`, {
+        amount,
+      })
       .then((res) => {
         console.log(res.data.payload)
         alert('Successfully initialised the blockchain')

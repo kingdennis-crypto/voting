@@ -8,7 +8,7 @@ export default function AdminParty() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/parties')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/parties`)
       .then((res) => {
         setParties(res.data.payload)
       })

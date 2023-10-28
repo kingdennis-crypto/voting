@@ -14,7 +14,7 @@ export default function AddCandidate() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/parties')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/parties`)
       .then((res: any) => {
         setParty(res.data.payload[0])
         console.log(res.data.payload[0])
@@ -29,7 +29,10 @@ export default function AddCandidate() {
     console.log({ name, partyId: party!.id })
 
     axios
-      .post('http://localhost:5050/candidates', { name, partyId: party!.id })
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/candidates`, {
+        name,
+        partyId: party!.id,
+      })
       .then((res) => {
         console.log(res)
         alert('Successfully created a candidate')
