@@ -13,7 +13,7 @@ export default function AddParty() {
     console.log(name)
 
     axios
-      .post('http://localhost:5050/parties', { name })
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/parties`, { name })
       .then((res) => {
         console.log(res)
         alert('Successfully created a party')

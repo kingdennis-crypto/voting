@@ -10,7 +10,7 @@ export default function AdminUsers() {
     console.log('Username', username)
 
     axios
-      .post('http://localhost:5050/authentication/user', {
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/authentication/user`, {
         userId: username,
         role: 'voter',
       })

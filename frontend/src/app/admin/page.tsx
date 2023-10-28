@@ -19,7 +19,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/config/identities')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/config/identities`)
       .then((res: any) => {
         setIdentities(res.data.payload)
         setSelectedUser(res.data.payload[0])
@@ -31,7 +31,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/config/connection')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/config/connection`)
       .then((res: any) => {
         const { channels, organisations, selected } = res.data.payload
         console.log({ channels, organisations, selected })
@@ -57,7 +57,7 @@ export default function AdminPage() {
 
   const handleSave = () => {
     axios
-      .post('http://localhost:5050/config/connection', {
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/config/connection`, {
         channel: selectedChannel,
         user: selectedUser,
         organisation: selectedOrg.id,
