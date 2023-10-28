@@ -26,7 +26,7 @@ export default function VotePage() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/candidates/')
+      .get('${process.env.NEXT_PUBLIC_SERVER_URL}/candidates/')
       .then((res) => {
         setLoading(false)
         setCandidates(res.data.payload)
@@ -39,7 +39,9 @@ export default function VotePage() {
   const handleVote = () => {
     console.log(selectedCandidate)
     axios
-      .post('http://localhost:5050/votes/', { candidateId: selectedCandidate })
+      .post('${process.env.NEXT_PUBLIC_SERVER_URL}/votes/', {
+        candidateId: selectedCandidate,
+      })
       .then((res) => {
         console.log(res)
         alert('Successfully voted')

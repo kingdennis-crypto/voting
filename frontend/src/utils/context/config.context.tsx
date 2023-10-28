@@ -26,7 +26,7 @@ export function ConfigProvider({ children }: Props): ReactNode {
 
   useEffect(() => {
     axios
-      .get('http://localhost:5050/config/initialized')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/config/initialized`)
       .then((res) => {
         console.log(res.data.payload)
         setInitialised(res.data.payload.initialised)
