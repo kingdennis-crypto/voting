@@ -11,8 +11,6 @@ handle_error() {
 
 trap 'handle_error $LINENO' ERR
 
-# CONFIG_PATH="./api/src/config.json"
-
 echo "Removing old wallets"
 /bin/rm -rf $PWD/wallet/*
 
@@ -22,9 +20,21 @@ jq '. + { initialised: false }' "$CONFIG_PATH" > ./temp.json && mv ./temp.json "
 echo "Pull and relocate the test-network"
 rm -rf fabric-samples
 rm -rf test-network
-git clone git@github.com:hyperledger/fabric-samples.git
+rm -rf bin
+rm -rf config
+rm -rf builders
+
+./install-fabric.sh
+
 mv ./fabric-samples/test-network ./test-network
+mv ./fabric-samples/bin ./bin
+mv ./fabric-samples/builders ./builders
+mv ./fabric-samples/config ./config
 rm -rf ./fabric-samples
+
+echo "Update OrdererType from solo to kafka"
+awk '/OrdererType:/ && /solo/ {sub(/solo/, "kafka")} 1' ./config/configtx.yaml > temp.yaml
+mv temp.yaml ./config/configtx.yaml
 
 echo "Closing leftover channels"
 $PWD/test-network/network.sh down
