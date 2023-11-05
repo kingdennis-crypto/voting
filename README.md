@@ -1,5 +1,9 @@
 # Hyperledger Fabric Digital Voting System
 
+## DONT FORGET BEFORE STARTING API
+
+export FABRIC_PATH=$PWD
+
 ## Description
 
 This application demonstrates the implementation of a secure digital voting system leveraging the Hyperledger Fabric blockchain framework. Hyperledger Fabric provides a foundation for building our distributed ledger application, ensuring transparency, security, and tamper-resistance.

@@ -9,17 +9,19 @@ source ./variables.sh
 
 # TODO: Call function to create admin wallet identity before starting the explorer
 
+mkdir explorer
+
 echo "Stopping the old explorer containers"
-cd ./explorer2
+cd ./explorer
 docker compose down
 cd ../
 
 echo "Removing the old explorer folder"
-rm -rf ./explorer2
+rm -rf ./explorer
 
 echo "Creating the explorer dir"
-mkdir explorer2
-cd explorer2
+mkdir explorer
+cd explorer
 
 echo "Downloading the correct files"
 wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/config.json
@@ -32,6 +34,9 @@ echo "EXPLORER_CONFIG_FILE_PATH=./config.json" >> .env
 echo "EXPLORER_PROFILE_DIR_PATH=./connection-profile" >> .env
 echo "FABRIC_CRYPTO_PATH=./organizations" >> .env
 
+sed '/^networks:/,/^$/ s/mynetwork.com:/&\n    external: true/' ./docker-compose.yaml >> ./temp.yaml
+mv temp.yaml docker-compose.yaml
+
 echo "Copying the organizations folder to the explorer folder"
 cp -r ../test-network/organizations ./organizations
 
@@ -39,7 +44,7 @@ echo "Replacing the connection values"
 cd ../test-network/organizations
 ADMIN_PRIV_KEY_PATH="/tmp/crypto/$(find "peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore" -type f -print -quit)"
 SIGNED_CERT_PATH="/tmp/crypto/$(find "peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts" -type f -print -quit)"
-cd ../../explorer2/connection-profile
+cd ../../explorer/connection-profile
 
 jq --arg new_path "$ADMIN_PRIV_KEY_PATH" \
    --arg new_cert "$SIGNED_CERT_PATH" \
