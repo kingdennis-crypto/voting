@@ -19,7 +19,7 @@ export default function VotePage() {
 
   useEffect(() => {
     axios
-      .get('${process.env.NEXT_PUBLIC_SERVER_URL}/candidates/')
+      .get(`${process.env.NEXT_PUBLIC_SERVER_URL}/candidates/`)
       .then((res) => {
         setLoading(false)
         setCandidates(res.data.payload)
@@ -32,7 +32,7 @@ export default function VotePage() {
   const handleVote = () => {
     console.log(selectedCandidate)
     axios
-      .post('${process.env.NEXT_PUBLIC_SERVER_URL}/votes/', {
+      .post(`${process.env.NEXT_PUBLIC_SERVER_URL}/votes/`, {
         candidateId: selectedCandidate,
       })
       .then((res) => {
