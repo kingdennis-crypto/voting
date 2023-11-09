@@ -1,12 +1,8 @@
 'use client'
 
 import { useConfig } from '@/utils/context/config.context'
-'use client'
-
-import { useConfig } from '@/utils/context/config.context'
 import RequestHelper from '@/utils/helpers/request'
 import { RequestObject } from '@/utils/types'
-import axios from 'axios'
 import axios from 'axios'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -41,33 +37,6 @@ export default function Home() {
 
   return (
     <main>
-      {isInitialised ? (
-        <>
-          <p>Hello</p>
-          <div className="flex flex-col gap-2">
-            {user ? (
-              <a className="px-4 py-2 border-2 border-gray-500" href="/admin">
-                Go to admin page
-              </a>
-            ) : (
-              <a
-                className="px-4 py-2 border-2 border-gray-500"
-                href={'/api/auth/login'}
-              >
-                Login
-              </a>
-            )}
-            <a className="px-4 py-2 border-2 border-gray-500" href="/vote">
-              Vote
-            </a>
-          </div>
-        </>
-      ) : (
-        <>
-          <p>Initialise data</p>
-          <button onClick={initialiseData}>Initialize</button>
-        </>
-      )}
       {isInitialised ? (
         <>
           <p>Hello</p>

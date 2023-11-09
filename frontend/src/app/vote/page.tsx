@@ -2,14 +2,7 @@
 
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
-type Candidate = {
-  id: string
-  name: string
-  partyId: string
-}
 
 type Candidate = {
   id: string
@@ -63,33 +56,6 @@ export default function VotePage() {
   return (
     <div>
       <p>Vote</p>
-      <p>Candidates:</p>
-      <div className="flex flex-col gap-2">
-        {candidates.length === 0 ? (
-          <p>There are no candidates available...</p>
-        ) : (
-          <>
-            {candidates.map((candidate, index) => (
-              <div key={index} className="flex items-center">
-                <input
-                  id={candidate.id}
-                  value={candidate.id}
-                  type="radio"
-                  onChange={(e) => setSelected(e.target.value)}
-                  checked={selectedCandidate === candidate.id}
-                />
-                <label htmlFor={candidate.id}>{candidate.name}</label>
-              </div>
-            ))}
-            <button
-              onClick={handleVote}
-              className="bg-blue-500 text-white py-2 px-4"
-            >
-              Vote
-            </button>
-          </>
-        )}
-      </div>
       <p>Candidates:</p>
       <div className="flex flex-col gap-2">
         {candidates.length === 0 ? (
