@@ -1,9 +1,5 @@
 # Hyperledger Fabric Digital Voting System
 
-## DONT FORGET BEFORE STARTING API
-
-export FABRIC_PATH=$PWD
-
 ## Description
 
 This application demonstrates the implementation of a secure digital voting system leveraging the Hyperledger Fabric blockchain framework. Hyperledger Fabric provides a foundation for building our distributed ledger application, ensuring transparency, security, and tamper-resistance.
@@ -38,6 +34,7 @@ Instructions on how to get your project set up and running
 - NPM
 - Docker
 - Docker Compose
+- Python
 
 ## Installation
 
@@ -50,9 +47,10 @@ Step-by-step guide on how to install the project:
 1. Run the following command:
 
 ```bash
-# Run these two seperate script in this order
-variables.sh
-setup.sh
+# This will set all the variables that need to be used in the setup script.
+./variables.sh
+# This will install all the dependencies of the network and initialize it.
+./setup.sh
 ```
 
 ## Usage
@@ -60,6 +58,8 @@ setup.sh
 To start the API go to the API folder and run these command:
 
 ```bash
+export FABRIC_PATH=$PWD
+
 cd api
 npm install
 npm run start
@@ -73,4 +73,25 @@ npm install
 npm run start
 ```
 
-Lorem ipsum
+When first opening the frontend. You get the question to 'initialize data'. This is because for the voter contract we use ERC20. This can only be setup after initialisation. That is why the button asks the user to initialize. Otherwise it wouldn't work with the custom tokens.
+
+After the alert you need to refresh the page to be able to fully access the application
+
+After initialization you can access the admin pages. To access the admin pages, you need to login with these credentials:
+
+- email: admin@votenet.com
+- password: adminpw
+
+## Routes
+
+### Frontend
+
+- `/vote`
+- `/admin`
+- `/admin/users`
+- `/admin/users/:id`
+- `/admin/votes`
+- `/admin/parties`
+- `/admin/parties/:id`
+- `/admin/candidates/`
+- `/admin/candidates/:id`
